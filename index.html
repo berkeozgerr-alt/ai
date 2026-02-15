@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilge AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- MODERN BEYAZ & MAVİ TASARIM --- */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f0f4f8; /* Çok açık mavimsi gri */
+            color: #1e293b; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        
+        #container {
+            width: 100%; max-width: 800px; height: 100vh;
+            background: #ffffff; 
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05); /* Hafif gölge */
+        }
+
+        /* ÜST KISIM */
+        #header {
+            padding: 20px; 
+            background: linear-gradient(135deg, #2563eb, #1d4ed8); /* Mavi degrade */
+            color: white;
+            text-align: center;
+        }
+        
+        #header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+        #header p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.9; }
+
+        /* BAĞLANTI PANELİ */
+        #connection-panel {
+            padding: 15px; background: #eff6ff; border-bottom: 1px solid #dbeafe;
+            display: flex; gap: 10px; flex-direction: column;
+        }
+
+        .row { display: flex; gap: 10px; }
+
+        input.key-input {
+            flex: 1; padding: 12px; background: #fff; border: 1px solid #cbd5e1; 
+            color: #334155; outline: none; border-radius: 8px; font-family: monospace; transition: 0.3s;
+        }
+        input.key-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        button.connect-btn {
+            padding: 0 20px; background: #2563eb; color: #fff; border: none; 
+            font-weight: bold; cursor: pointer; border-radius: 8px; transition: 0.2s;
+        }
+        button.connect-btn:hover { background: #1e40af; }
+
+        /* DURUM ÇUBUĞU */
+        #status-log {
+            font-size: 0.85rem; color: #64748b; padding: 8px 20px; border-bottom: 1px solid #f1f5f9;
+            background: #f8fafc; display: flex; align-items: center; font-weight: 500;
+        }
+
+        /* SOHBET PENCERESİ */
+        #chat-window {
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+            background: #fff;
+        }
+
+        /* Mesaj Baloncukları */
+        .msg { padding: 12px 18px; border-radius: 12px; max-width: 80%; line-height: 1.5; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        
+        .bot { 
+            background: #f1f5f9; /* Açık gri */
+            color: #334155; 
+            align-self: flex-start; 
+            border-bottom-left-radius: 2px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .user { 
+            background: #2563eb; /* Mavi */
+            color: #fff; 
+            align-self: flex-end; 
+            border-bottom-right-radius: 2px; 
+        }
+        
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; align-self: center; text-align: center; }
+
+        /* MESAJ YAZMA ALANI */
+        #input-area {
+            padding: 20px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;
+        }
+        input.msg-input { 
+            flex: 1; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; 
+            color: #334155; outline: none; border-radius: 10px; font-size: 1rem; transition: 0.3s;
+        }
+        input.msg-input:focus { border-color: #2563eb; background: #fff; }
+
+        button.send-btn { 
+            padding: 0 25px; background: #2563eb; color: #fff; border: none; 
+            border-radius: 10px; cursor: pointer; font-size: 1.2rem; transition: 0.2s;
+        }
+        button.send-btn:hover { background: #1e40af; transform: translateY(-2px); }
+        button.send-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <div id="header">
+            <h1>💎 BİLGE AI</h1>
+            <p>Google Gemini Destekli Asistan</p>
+        </div>
+
+        <div id="connection-panel">
+            <div style="font-size:0.85rem; color:#64748b; margin-bottom:5px;">🔑 API Anahtarını Gir ve Başla:</div>
+            <div class="row">
+                <input type="password" id="api-key" class="key-input" placeholder="AIzaSy... kodunu buraya yapıştır">
+                <button class="connect-btn" onclick="bulVeBaglan()">BAĞLAN</button>
+            </div>
+        </div>
+
+        <div id="status-log">🔴 Durum: Bağlantı bekleniyor...</div>
+
+        <div id="chat-window">
+            <div class="msg bot">
+                Merhaba! Ben <b>Bilge AI</b>.
+                <br><br>
+                Senin için en iyi modeli (mesela <b>Gemini 2.5 Flash</b>) otomatik bulup çalıştıracağım.
+                <br><br>
+                Yukarıdan anahtarını girip <b>BAĞLAN</b> butonuna basman yeterli.
+            </div>
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="user-msg" class="msg-input" placeholder="Bağlantı bekleniyor..." disabled onkeypress="if(event.key=='Enter') sendMessage()">
+            <button id="send-btn" class="send-btn" onclick="sendMessage()" disabled>➤</button>
+        </div>
+    </div>
+
+    <script>
+        let ACTIVE_MODEL = ""; 
+        let API_KEY = "";
+
+        const statusLog = document.getElementById("status-log");
+        const chatWindow = document.getElementById("chat-window");
+        const msgInput = document.getElementById("user-msg");
+        const sendBtn = document.getElementById("send-btn");
+
+        async function bulVeBaglan() {
+            const keyInput = document.getElementById("api-key");
+            API_KEY = keyInput.value.trim();
+
+            if (!API_KEY.startsWith("AIza")) {
+                alert("Lütfen geçerli bir API anahtarı girin (AIza ile başlamalı).");
+                return;
+            }
+
+            statusLog.innerHTML = "🟠 Durum: Modeller taranıyor...";
+            statusLog.style.color = "#d97706"; // Turuncu
+
+            try {
+                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+                const response = await fetch(listUrl);
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error.message);
+                if (!data.models) throw new Error("Model listesi boş.");
+
+                // Senin bulduğun 2.5 modeli veya en yenisini bulmaya çalışır
+                let uygunModel = data.models.find(m => m.name.includes("gemini-2.5-flash")) || 
+                                 data.models.find(m => m.name.includes("gemini-1.5-pro")) ||
+                                 data.models.find(m => m.name.includes("gemini-1.5-flash")) ||
+                                 data.models.find(m => m.name.includes("gemini-pro"));
+
+                if (uygunModel) {
+                    ACTIVE_MODEL = uygunModel.name.replace("models/", "");
+                    
+                    statusLog.innerHTML = `🟢 Bağlandı: <b>${ACTIVE_MODEL}</b>`;
+                    statusLog.style.color = "#16a34a"; // Yeşil
+                    
+                    msgInput.disabled = false;
+                    sendBtn.disabled = false;
+                    msgInput.placeholder = "Bir şeyler sor...";
+                    msgInput.focus();
+                    
+                    addMessage(`Bağlantı başarılı! Şu an <b>${ACTIVE_MODEL}</b> modelini kullanıyorum.`, "bot");
+
+                } else {
+                    throw new Error("Uygun model bulunamadı.");
+                }
+
+            } catch (err) {
+                statusLog.innerText = "🔴 Hata: " + err.message;
+                statusLog.style.color = "#dc2626";
+                addMessage("Bağlantı hatası: " + err.message, "error");
+            }
+        }
+
+        async function sendMessage() {
+            const text = msgInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, "user");
+            msgInput.value = "";
+            
+            // Yükleniyor animasyonu (Basit)
+            const loading = addMessage("Bilge AI yazıyor...", "bot");
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${ACTIVE_MODEL}:generateContent?key=${API_KEY}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+                });
+
+                const data = await response.json();
+                loading.remove();
+
+                if (data.error) {
+                    addMessage("HATA: " + data.error.message, "error");
+                } else {
+                    let reply = data.candidates[0].content.parts[0].text;
+                    reply = reply.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+                    addMessage(reply, "bot");
+                }
+            } catch (err) {
+                loading.remove();
+                addMessage("İnternet bağlantısı koptu.", "error");
+            }
+        }
+
+        function addMessage(html, type) {
+            const div = document.createElement("div");
+            div.className = "msg " + type;
+            div.innerHTML = html;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return div;
+        }
+    </script>
+</body>
+</html>
